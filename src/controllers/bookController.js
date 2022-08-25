@@ -1,23 +1,63 @@
 const authorModel = require("../models/authorModel")
-const bookModel= require("../models/bookModel")
+const publisherModel = require("../models/publisherModel")
+const bookModel = require("../models/bookModel")
 
-const createBook= async function (req, res) {
-    let book = req.body
-    let bookCreated = await bookModel.create(book)
-    res.send({data: bookCreated})
+
+const createBook = async function (req, res) {
+    let body = req.body;
+    let authors = req.body.author;
+    let publisher = req.body.publisher;
+    let author_id = await authorModel.findById(authors).select({ _id: 1 });
+    let publisher_id = await publisherModel.findById(publisher).select({ _id: 1 });
+    if (!authors) {
+        return res.send("this detail is required");
+    } if (!author_id) {
+        return res.send("the author is not present");
+    } if (!publisher) {
+        return res.send("this details is required");
+    } if (!publisher_id) {
+        return res.send("the publisher is not present");
+    }
+    let bookCreated = await bookModel.create(body);
+    return res.send(bookCreated);
+}
+module.exports.createBook = createBook
+
+const getBooksallData = async function (req, res) {
+    let books = await bookModel.find().populate(['author', 'publisher'])
+    res.send({ data: books })
+}
+module.exports.getBooksallData = getBooksallData
+
+
+const allbooks = async function (req, res) {
+    let allbooks = await bookModel.updateMany(
+        { publisherName: { $in: ["penguin", "HarperCollins"] } },
+        { $set: { isHardCover: false } }
+    )
+    res.send({ msg: allbooks })
 }
 
-const getBooksData= async function (req, res) {
-    let books = await bookModel.find()
-    res.send({data: books})
+module.exports.allbooks = allbooks
+
+
+
+
+const updateBookPrice = async function (req, res) {
+    let objectId = await authorModel.find({ rating: { $gt: 3.5 } })
+    let updatedPrice = await bookModel.updateMany(
+        { author: { $in: objectId } },
+        { $inc: { price: +10 } })
+    res.send({ updatedPrice: updatedPrice })
 }
 
-const getBooksWithAuthorDetails = async function (req, res) {
-    let specificBook = await bookModel.find().populate('author_id')
-    res.send({data: specificBook})
+// const updaterating = async function(req,res){
+//         let ratenewbook = await AuthorModel.find({rating:{$gt:3.5}}).select({_id:1});
+//         let rate2 = ratenewbook.map(y=>y["_id"]);
+//         let updatenewrate = await BookModel.updateMany({author : {$in:(rate2)}},{$inc:{price: +10}});
+//         res.send(updatenewrate);
+//     }
 
-} 
 
-module.exports.createBook= createBook
-module.exports.getBooksData= getBooksData
-module.exports.getBooksWithAuthorDetails = getBooksWithAuthorDetails
+
+module.exports.updateBookPrice = updateBookPrice
