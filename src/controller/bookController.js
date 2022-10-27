@@ -5,12 +5,25 @@ const validator = require('../validators/validator')
 const ObjectId = mongoose.Types.ObjectId;
 const moment = require('moment');
 const reviewModel = require('../models/reviewModel');
-
+const uploadFile = require('../controller/aws');
 
 //--------------------------------Create Book--------------------------------------//
 const createBook = async function(req, res) {
         try {
-            let data = req.body;
+            if(files = req.files){
+            if (files && files.length > 0) {
+                //upload to s3 and get the uploaded link
+                // res.send the link back to frontend/postman
+                let uploadedFileURL = await uploadFile.uploadFile(files[0])
+                return res.status(201).send({ msg: "file uploaded succesfully", data: uploadedFileURL })
+            }
+            else {
+                return res.status(400).send({ msg: "No file found" })
+            }
+
+        }
+    
+            if(data = req.body){
             let { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = data
 
             if (Object.keys(data).length == 0) return res.status(400).send({ status: false, msg: "Request body cannot be empty,please provide book  details to create book" })
@@ -54,7 +67,7 @@ const createBook = async function(req, res) {
 
             const bookCreated = await bookModel.create(data)
             return res.status(201).send({ status: true, msg: "Success", data: bookCreated })
-
+            }
         } catch (err) {
             return res.status(500).send({ status: false, msg: err.message })
         }
@@ -195,7 +208,7 @@ const deleteBook = async function(req, res) {
         if (!checkBook) return res.status(404).send({ status: false, msg: "No book present with this book Id or is already deleted + 1" })
 
         await bookModel.findOneAndUpdate({ _id: bId }, { isDeleted: true, deletedAt: new Date() }, { new: true })
-        return res.status(200).send({ status: false, msg: "Book deleted successfully!!" })
+        return res.status(200).send({ status: true, msg: "Book deleted successfully!!" })
     } catch (err) {
         return res.status(500).send({ status: false, msg: err.message })
     }

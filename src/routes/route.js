@@ -7,14 +7,10 @@ const middleWare = require('../middleware/auth')
 
 //-------------------register-----------------------------//
 router.post('/register', userController.createUser)
-
 //--------------------Loginuser---------------------------//
 router.post('/login', userController.loginUser)
-
 //--------------------createbook--------------------------//
-
 router.post('/books', middleWare.authenticate, middleWare.authorisation, bookController.createBook)
-
 //--------------------getebookbyquery---------------------//
 router.get('/books', middleWare.authenticate, bookController.getBooks)
 

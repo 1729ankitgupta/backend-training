@@ -11,7 +11,8 @@ const bookSchema = new mongoose.Schema({
     reviews: { type: Number, default: 0 ,trim:true},
     deletedAt: { type: Date },
     isDeleted: { type: Boolean, default: false},
-    releasedAt: { type: Date, required: true ,trim:true}
+    releasedAt: { type: Date, required: true ,trim:true},
+    bookCover: {type:String,required:true}
 }, { timestamps: true })
 
 module.exports = mongoose.model('Book', bookSchema);
